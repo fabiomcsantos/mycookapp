@@ -6,6 +6,7 @@ import { services } from "@/services";
 import { Loading } from "@/components/Loading";
 import { Step } from "@/components/Step";
 import { styles } from './styles';
+import { Ingredients } from "@/components/ingredients";
 
 
 
@@ -13,6 +14,7 @@ export default function Recipes(){
 
     const [recipe, setRecipe] = useState<RecipeResponse | null>(null)
     const [preparations, setPreparations] = useState<PreparationsResponse[]>([])
+    const [ingredients, setIngredients] = useState<IngredientResponse[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const {id} = useLocalSearchParams<{id:string}>()
 
@@ -32,13 +34,20 @@ export default function Recipes(){
                 .finally( () => setIsLoading(false) )
     },[])
 
+    useEffect( () => {
+        if (id)
+            services.ingredients
+                .findByRecipeId(id)
+                .then( (response) => setIngredients(response))
+    },[])
+
 if (isLoading){
     return <Loading/>
 }
 
     return (
         <View style={styles.container}>
-           <Image source={{ uri: recipe?.image }} style={styles.image} />>
+           <Image source={{ uri: recipe?.image }} style={styles.image} />
            <View style={styles.body}>
                 <View style={styles.header}>
                     <MaterialIcons
@@ -49,6 +58,9 @@ if (isLoading){
                     <Text style={styles.name}>{recipe?.name}</Text>
                     <Text style={styles.time}>{recipe?.minutes} minutos de preparo</Text>
                 </View>
+
+                <Ingredients ingredients={ingredients}/>
+
                 <View style={styles.content}>
                     <Text style={styles.preparation}>Modo de preparo</Text>
                     <FlatList
